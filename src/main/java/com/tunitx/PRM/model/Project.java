@@ -22,7 +22,7 @@ public class Project {
 
     @ManyToOne
     @JoinColumn(name = "manager_id", nullable = false)
-    private Employee manager;
+    private User manager;
 
     @Column(nullable = false, length = 100)
     private String name;
@@ -38,6 +38,9 @@ public class Project {
 
     @Column(nullable = false, length = 20)
     private String status;
+
+    @Column(length = 20)
+    private String health = "ON_TRACK";
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private List<Milestone> milestones;

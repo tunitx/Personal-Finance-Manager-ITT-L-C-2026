@@ -3,11 +3,11 @@ package com.tunitx.PRM.service;
 import com.tunitx.PRM.dto.allocation.AllocationResponse;
 import com.tunitx.PRM.dto.allocation.CreateAllocationRequest;
 import com.tunitx.PRM.model.Allocation;
-import com.tunitx.PRM.model.Employee;
 import com.tunitx.PRM.model.Project;
+import com.tunitx.PRM.model.User;
 import com.tunitx.PRM.repository.AllocationRepository;
-import com.tunitx.PRM.repository.EmployeeRepository;
 import com.tunitx.PRM.repository.ProjectRepository;
+import com.tunitx.PRM.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,16 +20,15 @@ import java.util.stream.Collectors;
 public class AllocationService {
 
     private final AllocationRepository allocationRepository;
-    private final EmployeeRepository employeeRepository;
+    private final UserRepository userRepository;          // ← was EmployeeRepository
     private final ProjectRepository projectRepository;
 
-    public List<AllocationResponse> getAllAllocations(
-            Long employeeId, Long projectId) {
+    public List<AllocationResponse> getAllAllocations(Long userId, Long projectId) {
 
         List<Allocation> allocations;
 
-        if (employeeId != null) {
-            allocations = allocationRepository.findByEmployeeId(employeeId);
+        if (userId != null) {
+            allocations = allocationRepository.findByUserId(userId);       // ← was findByEmployeeId
         } else if (projectId != null) {
             allocations = allocationRepository.findByProjectId(projectId);
         } else {
@@ -41,8 +40,8 @@ public class AllocationService {
                 .collect(Collectors.toList());
     }
 
-    public List<AllocationResponse> getMyAllocations(Long employeeId) {
-        return allocationRepository.findByEmployeeId(employeeId)
+    public List<AllocationResponse> getMyAllocations(Long userId) {
+        return allocationRepository.findByUserId(userId)                   // ← was findByEmployeeId
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -54,8 +53,8 @@ public class AllocationService {
             throw new RuntimeException("To date must be after from date");
         }
 
-        Employee employee = employeeRepository.findById(request.getEmployeeId())
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        User user = userRepository.findById(request.getUserId())           // ← was employeeRepository + Employee
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Project project = projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new RuntimeException("Project not found"));
@@ -68,7 +67,7 @@ public class AllocationService {
 
         Integer currentUtilisation = allocationRepository
                 .getTotalUtilisationForPeriod(
-                        request.getEmployeeId(),
+                        request.getUserId(),                               // ← was getEmployeeId
                         request.getFromDate(),
                         request.getToDate(),
                         null
@@ -85,7 +84,7 @@ public class AllocationService {
         }
 
         Allocation allocation = new Allocation();
-        allocation.setEmployee(employee);
+        allocation.setUser(user);                                          // ← was setEmployee
         allocation.setProject(project);
         allocation.setUtilisationPct(request.getUtilisationPct());
         allocation.setFromDate(request.getFromDate());
@@ -93,8 +92,8 @@ public class AllocationService {
         allocation.setActive(true);
 
         if (newTotal > 0) {
-            employee.setStatus("ALLOCATED");
-            employeeRepository.save(employee);
+            user.setStatus("ALLOCATED");
+            userRepository.save(user);                                     // ← was employeeRepository
         }
 
         Allocation saved = allocationRepository.save(allocation);
@@ -115,13 +114,13 @@ public class AllocationService {
         allocationRepository.save(allocation);
 
         List<Allocation> activeAllocations = allocationRepository
-                .findByEmployeeIdAndIsActive(
-                        allocation.getEmployee().getId(), true);
+                .findByUserIdAndIsActive(                                  // ← was findByEmployeeIdAndIsActive
+                        allocation.getUser().getId(), true);               // ← was getEmployee()
 
         if (activeAllocations.isEmpty()) {
-            Employee employee = allocation.getEmployee();
-            employee.setStatus("BENCH");
-            employeeRepository.save(employee);
+            User user = allocation.getUser();                              // ← was getEmployee()
+            user.setStatus("BENCH");
+            userRepository.save(user);                                     // ← was employeeRepository
         }
 
         return mapToResponse(allocation);
@@ -130,8 +129,8 @@ public class AllocationService {
     private AllocationResponse mapToResponse(Allocation allocation) {
         return new AllocationResponse(
                 allocation.getId(),
-                allocation.getEmployee().getId(),
-                allocation.getEmployee().getFullName(),
+                allocation.getUser().getId(),                              // ← was getEmployee()
+                allocation.getUser().getFullName(),                        // ← was getEmployee()
                 allocation.getProject().getId(),
                 allocation.getProject().getName(),
                 allocation.getUtilisationPct(),

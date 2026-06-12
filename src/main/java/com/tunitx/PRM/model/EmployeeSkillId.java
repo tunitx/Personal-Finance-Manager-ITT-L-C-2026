@@ -13,6 +13,6 @@ import java.io.Serializable;
 @EqualsAndHashCode
 public class EmployeeSkillId implements Serializable {
 
-    private Long employeeId;
+    private Long userId;
     private Long skillId;
 }

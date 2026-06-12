@@ -4,7 +4,9 @@ import com.tunitx.PRM.dto.ChangePasswordRequest;
 import com.tunitx.PRM.dto.LoginRequest;
 import com.tunitx.PRM.dto.LoginResponse;
 import com.tunitx.PRM.dto.SignUpRequest;
+import com.tunitx.PRM.model.Role;
 import com.tunitx.PRM.model.User;
+import com.tunitx.PRM.repository.RoleRepository;
 import com.tunitx.PRM.repository.UserRepository;
 import com.tunitx.PRM.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final RoleRepository roleRepository;
 
     public LoginResponse login(LoginRequest request) {
 
@@ -39,7 +42,7 @@ public class AuthService {
         String token = jwtUtil.generateToken(
                 user.getId(),
                 user.getUsername(),
-                user.getRole()
+                user.getRoleName()
         );
 
         String fullName = user.getUsername();
@@ -47,7 +50,7 @@ public class AuthService {
         return new LoginResponse(
                 token,
                 user.getId(),
-                user.getRole(),
+                user.getRoleName(),
                 fullName,
                 user.isForcePasswordChange()
         );
@@ -63,11 +66,15 @@ public class AuthService {
             throw new RuntimeException("Email already registered");
         }
 
+        Role role = roleRepository.findByName(request.getRole())
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+
+
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setRole(request.getRole());
+        user.setRole(role);
         user.setForcePasswordChange(true);
         user.setActive(true);
 

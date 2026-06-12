@@ -8,8 +8,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface EmployeeSkillRepository
+public interface UserSkillRepository
         extends JpaRepository<EmployeeSkill, EmployeeSkillId> {
 
-    List<EmployeeSkill> findByEmployeeId(Long employeeId);
+    List<EmployeeSkill> findByUserId(Long userId);
 }

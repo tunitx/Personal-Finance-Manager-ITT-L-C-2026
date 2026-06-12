@@ -22,7 +22,7 @@ public class TimesheetService {
     private final TimesheetEntryRepository timesheetEntryRepository;
     private final ActivityTagRepository activityTagRepository;
     private final AllocationRepository allocationRepository;
-    private final EmployeeRepository employeeRepository;
+    private final UserRepository userRepository;               // ← was EmployeeRepository
 
     public List<TagResponse> getAllTags() {
         return activityTagRepository.findAll()
@@ -32,10 +32,10 @@ public class TimesheetService {
     }
 
     public List<ActiveAllocationResponse> getActiveAllocations(
-            Long employeeId, LocalDate weekStart) {
+            Long userId, LocalDate weekStart) {               // ← param renamed
 
         return allocationRepository
-                .findByEmployeeIdAndIsActive(employeeId, true)
+                .findByUserIdAndIsActive(userId, true)         // ← was findByEmployeeIdAndIsActive
                 .stream()
                 .filter(a -> !a.getFromDate().isAfter(weekStart)
                         && !a.getToDate().isBefore(weekStart))
@@ -49,8 +49,8 @@ public class TimesheetService {
                 .collect(Collectors.toList());
     }
 
-    public List<TimesheetResponse> getMyTimesheets(Long employeeId) {
-        return timesheetRepository.findByEmployeeId(employeeId)
+    public List<TimesheetResponse> getMyTimesheets(Long userId) {   // ← param renamed
+        return timesheetRepository.findByUserId(userId)              // ← was findByEmployeeId
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -59,20 +59,20 @@ public class TimesheetService {
     public List<TimesheetResponse> getTeamTimesheets(
             Long managerId, LocalDate weekStart) {
 
-        List<Long> teamEmployeeIds = allocationRepository
+        List<Long> teamUserIds = allocationRepository
                 .findByProjectId(managerId)
                 .stream()
-                .map(a -> a.getEmployee().getId())
+                .map(a -> a.getUser().getId())                       // ← was getEmployee()
                 .distinct()
                 .collect(Collectors.toList());
 
         List<Timesheet> timesheets;
         if (weekStart != null) {
             timesheets = timesheetRepository
-                    .findByEmployeeIdInAndWeekStart(teamEmployeeIds, weekStart);
+                    .findByUserIdInAndWeekStart(teamUserIds, weekStart);    // ← was findByEmployeeIdInAndWeekStart
         } else {
             timesheets = timesheetRepository
-                    .findByEmployeeIdIn(teamEmployeeIds);
+                    .findByUserIdIn(teamUserIds);                           // ← was findByEmployeeIdIn
         }
 
         return timesheets.stream()
@@ -82,7 +82,7 @@ public class TimesheetService {
 
     @Transactional
     public TimesheetResponse submitTimesheet(
-            Long employeeId, SubmitTimesheetRequest request) {
+            Long userId, SubmitTimesheetRequest request) {             // ← param renamed
 
         LocalDate weekStart = request.getWeekStart();
 
@@ -90,14 +90,13 @@ public class TimesheetService {
             throw new RuntimeException("Cannot submit timesheet for a future week");
         }
 
-        if (timesheetRepository.findByEmployeeIdAndWeekStart(
-                employeeId, weekStart).isPresent()) {
-            throw new RuntimeException(
-                    "Timesheet already submitted for this week");
+        if (timesheetRepository.findByUserIdAndWeekStart(             // ← was findByEmployeeIdAndWeekStart
+                userId, weekStart).isPresent()) {
+            throw new RuntimeException("Timesheet already submitted for this week");
         }
 
         List<ActiveAllocationResponse> activeAllocations =
-                getActiveAllocations(employeeId, weekStart);
+                getActiveAllocations(userId, weekStart);
 
         List<Long> activeProjectIds = activeAllocations.stream()
                 .map(ActiveAllocationResponse::getProjectId)
@@ -122,8 +121,9 @@ public class TimesheetService {
         }
 
         Timesheet timesheet = new Timesheet();
-        timesheet.setEmployee(employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found")));
+        timesheet.setUser(                                             // ← was setEmployee
+                userRepository.findById(userId)                        // ← was employeeRepository
+                        .orElseThrow(() -> new RuntimeException("User not found")));
         timesheet.setWeekStart(weekStart);
         timesheet.setStatus("SUBMITTED");
         timesheet.setSubmittedAt(LocalDateTime.now());
@@ -134,7 +134,7 @@ public class TimesheetService {
             TimesheetEntry entry = new TimesheetEntry();
             entry.setTimesheet(saved);
             entry.setProject(allocationRepository
-                    .findByEmployeeIdAndIsActive(employeeId, true)
+                    .findByUserIdAndIsActive(userId, true)             // ← was findByEmployeeIdAndIsActive
                     .stream()
                     .filter(a -> a.getProject().getId()
                             .equals(entryRequest.getProjectId()))
@@ -179,8 +179,8 @@ public class TimesheetService {
 
         return new TimesheetResponse(
                 timesheet.getId(),
-                timesheet.getEmployee().getId(),
-                timesheet.getEmployee().getFullName(),
+                timesheet.getUser().getId(),                           // ← was getEmployee()
+                timesheet.getUser().getFullName(),                     // ← was getEmployee()
                 timesheet.getWeekStart(),
                 timesheet.getStatus(),
                 totalHours,

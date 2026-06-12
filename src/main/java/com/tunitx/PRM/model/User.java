@@ -32,8 +32,23 @@ public class User implements UserDetails {
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
-    @Column(nullable = false, length = 20)
-    private String role;
+    // Add this instead
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
+
+    // Add these new profile fields
+    @Column(name = "full_name", length = 100)
+    private String fullName;
+
+    @Column(length = 100)
+    private String department;
+
+    @Column(length = 100)
+    private String designation;
+
+    @Column(length = 20)
+    private String status;
 
     @Column(name = "force_password_change", nullable = false)
     private boolean forcePasswordChange = false;
@@ -60,7 +75,11 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.getName()));
+    }
+
+    public String getRoleName() {
+        return role.getName();
     }
 
     @Override

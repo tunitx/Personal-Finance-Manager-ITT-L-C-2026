@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "employee_skills")
+@Table(name = "user_skills")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,9 +16,9 @@ public class EmployeeSkill {
     private EmployeeSkillId id;
 
     @ManyToOne
-    @MapsId("employeeId")
-    @JoinColumn(name = "employee_id")
-    private Employee employee;
+    @MapsId("userId")
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne
     @MapsId("skillId")

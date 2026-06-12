@@ -12,8 +12,8 @@ import java.time.LocalDate;
 @Setter
 public class CreateAllocationRequest {
 
-    @NotNull(message = "Employee ID is required")
-    private Long employeeId;
+    @NotNull(message = "User ID is required")
+    private Long userId;
 
     @NotNull(message = "Project ID is required")
     private Long projectId;

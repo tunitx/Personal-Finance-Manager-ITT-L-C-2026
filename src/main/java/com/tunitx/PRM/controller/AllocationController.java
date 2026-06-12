@@ -2,8 +2,8 @@ package com.tunitx.PRM.controller;
 
 import com.tunitx.PRM.dto.allocation.AllocationResponse;
 import com.tunitx.PRM.dto.allocation.CreateAllocationRequest;
-import com.tunitx.PRM.model.Employee;
-import com.tunitx.PRM.repository.EmployeeRepository;
+import com.tunitx.PRM.model.User;
+import com.tunitx.PRM.repository.UserRepository;
 import com.tunitx.PRM.service.AllocationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,15 +21,15 @@ import java.util.List;
 public class AllocationController {
 
     private final AllocationService allocationService;
-    private final EmployeeRepository employeeRepository;
+    private final UserRepository userRepository;          // ← was EmployeeRepository
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<List<AllocationResponse>> getAllAllocations(
-            @RequestParam(required = false) Long employeeId,
+            @RequestParam(required = false) Long userId,
             @RequestParam(required = false) Long projectId) {
         return ResponseEntity.ok(
-                allocationService.getAllAllocations(employeeId, projectId));
+                allocationService.getAllAllocations(userId, projectId));
     }
 
     @GetMapping("/my")
@@ -38,11 +38,11 @@ public class AllocationController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        Employee employee = employeeRepository.findByUserUsername(username)
-                .orElseThrow(() -> new RuntimeException("Employee profile not found"));
+        User user = userRepository.findByUsername(username)  // ← was employeeRepository.findByUserUsername
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         return ResponseEntity.ok(
-                allocationService.getMyAllocations(employee.getId()));
+                allocationService.getMyAllocations(user.getId()));  // ← was employee.getId()
     }
 
     @PostMapping

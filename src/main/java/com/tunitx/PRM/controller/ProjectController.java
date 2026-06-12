@@ -31,6 +31,12 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.getProject(id));
     }
 
+    @GetMapping("/{id}/manager/{managerId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ProjectResponse> getProject(@PathVariable Long id, @PathVariable Long managerId) {
+        return ResponseEntity.ok(projectService.getProject(id, managerId));
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProjectResponse> createProject(

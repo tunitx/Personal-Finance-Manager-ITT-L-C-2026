@@ -11,13 +11,11 @@ import java.util.Optional;
 @Repository
 public interface TimesheetRepository extends JpaRepository<Timesheet, Long> {
 
-    List<Timesheet> findByEmployeeId(Long employeeId);
+    List<Timesheet> findByUserId(Long userId);
 
-    Optional<Timesheet> findByEmployeeIdAndWeekStart(
-            Long employeeId, LocalDate weekStart);
+    Optional<Timesheet> findByUserIdAndWeekStart(Long userId, LocalDate weekStart);
 
-    List<Timesheet> findByEmployeeIdIn(List<Long> employeeIds);
+    List<Timesheet> findByUserIdIn(List<Long> userIds);
 
-    List<Timesheet> findByEmployeeIdInAndWeekStart(
-            List<Long> employeeIds, LocalDate weekStart);
+    List<Timesheet> findByUserIdInAndWeekStart(List<Long> userIds, LocalDate weekStart);
 }

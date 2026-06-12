@@ -12,23 +12,25 @@ import java.util.List;
 @Repository
 public interface AllocationRepository extends JpaRepository<Allocation, Long> {
 
-    List<Allocation> findByEmployeeId(Long employeeId);
+
+    List<Allocation> findByUserId(Long userId);
+
+    List<Allocation> findByUserIdAndIsActive(Long userId, boolean isActive);
 
     List<Allocation> findByProjectId(Long projectId);
 
-    List<Allocation> findByEmployeeIdAndIsActive(Long employeeId, boolean isActive);
 
     @Query("""
                 SELECT COALESCE(SUM(a.utilisationPct), 0)
                 FROM Allocation a
-                WHERE a.employee.id = :employeeId
+                WHERE a.user.Id = :userId
                 AND a.isActive = true
                 AND a.fromDate <= :toDate
                 AND a.toDate >= :fromDate
                 AND (:excludeId IS NULL OR a.id <> :excludeId)
             """)
     Integer getTotalUtilisationForPeriod(
-            @Param("employeeId") Long employeeId,
+            @Param("userId") Long userId,
             @Param("fromDate") LocalDate fromDate,
             @Param("toDate") LocalDate toDate,
             @Param("excludeId") Long excludeId

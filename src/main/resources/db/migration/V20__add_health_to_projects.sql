@@ -1,0 +1,2 @@
+ALTER TABLE projects
+    ADD COLUMN health VARCHAR(20) DEFAULT 'ON_TRACK';

@@ -21,8 +21,8 @@ public class Timesheet {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "employee_id", nullable = false)
-    private Employee employee;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(name = "week_start", nullable = false)
     private LocalDate weekStart;
@@ -36,7 +36,7 @@ public class Timesheet {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "timesheet", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "timesheet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<TimesheetEntry> entries;
 
     @PrePersist

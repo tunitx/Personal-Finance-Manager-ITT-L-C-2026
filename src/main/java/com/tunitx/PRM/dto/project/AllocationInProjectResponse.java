@@ -1,4 +1,4 @@
-package com.tunitx.PRM.dto.allocation;
+package com.tunitx.PRM.dto.project;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,15 +7,11 @@ import java.time.LocalDate;
 
 @Getter
 @AllArgsConstructor
-public class AllocationResponse {
+public class AllocationInProjectResponse {
 
-    private Long id;
     private Long userId;
     private String userName;
-    private Long projectId;
-    private String projectName;
     private Integer utilisationPct;
     private LocalDate fromDate;
     private LocalDate toDate;
-    private boolean isActive;
 }

@@ -4,8 +4,8 @@ import com.tunitx.PRM.dto.timesheet.ActiveAllocationResponse;
 import com.tunitx.PRM.dto.timesheet.SubmitTimesheetRequest;
 import com.tunitx.PRM.dto.timesheet.TagResponse;
 import com.tunitx.PRM.dto.timesheet.TimesheetResponse;
-import com.tunitx.PRM.model.Employee;
-import com.tunitx.PRM.repository.EmployeeRepository;
+import com.tunitx.PRM.model.User;
+import com.tunitx.PRM.repository.UserRepository;
 import com.tunitx.PRM.service.TimesheetService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ import java.util.List;
 public class TimesheetController {
 
     private final TimesheetService timesheetService;
-    private final EmployeeRepository employeeRepository;
+    private final UserRepository userRepository;          // ← was EmployeeRepository
 
     @GetMapping("/tags")
     @PreAuthorize("hasRole('EMPLOYEE')")
@@ -38,10 +38,10 @@ public class TimesheetController {
             @RequestParam LocalDate weekStart,
             Authentication authentication) {
 
-        Employee employee = getEmployee(authentication);
+        User user = getUser(authentication);              // ← was getEmployee
         return ResponseEntity.ok(
                 timesheetService.getActiveAllocations(
-                        employee.getId(), weekStart));
+                        user.getId(), weekStart));        // ← was employee.getId()
     }
 
     @GetMapping("/my")
@@ -49,9 +49,9 @@ public class TimesheetController {
     public ResponseEntity<List<TimesheetResponse>> getMyTimesheets(
             Authentication authentication) {
 
-        Employee employee = getEmployee(authentication);
+        User user = getUser(authentication);              // ← was getEmployee
         return ResponseEntity.ok(
-                timesheetService.getMyTimesheets(employee.getId()));
+                timesheetService.getMyTimesheets(user.getId()));  // ← was employee.getId()
     }
 
     @PostMapping
@@ -60,11 +60,11 @@ public class TimesheetController {
             @Valid @RequestBody SubmitTimesheetRequest request,
             Authentication authentication) {
 
-        Employee employee = getEmployee(authentication);
+        User user = getUser(authentication);              // ← was getEmployee
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(timesheetService.submitTimesheet(
-                        employee.getId(), request));
+                        user.getId(), request));          // ← was employee.getId()
     }
 
     @GetMapping("/team")
@@ -76,10 +76,10 @@ public class TimesheetController {
                 timesheetService.getTeamTimesheets(managerId, weekStart));
     }
 
-    private Employee getEmployee(Authentication authentication) {
+    private User getUser(Authentication authentication) { // ← was getEmployee returning Employee
         String username = authentication.getName();
-        return employeeRepository.findByUserUsername(username)
+        return userRepository.findByUsername(username)    // ← was employeeRepository.findByUserUsername
                 .orElseThrow(() ->
-                        new RuntimeException("Employee profile not found"));
+                        new RuntimeException("User not found"));
     }
 }
