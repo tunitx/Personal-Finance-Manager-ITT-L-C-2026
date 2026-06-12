@@ -42,3 +42,10 @@ public class GemmaAdaptor implements LlmProvider {
 
             // Extracting the text directly from the root "response" field
             return root.path("response").asText("No response generated.");
+
+        } catch (Exception e) {
+            log.error("Gemma API call failed: {}", e.getMessage());
+            return "AI service unavailable: " + e.getMessage();
+        }
+    }
+}
