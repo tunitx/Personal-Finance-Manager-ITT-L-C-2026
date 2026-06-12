@@ -154,4 +154,11 @@ public class UserController {
         userManagerMappingService.removeManager(id);
         return ResponseEntity.ok("Manager removed.");
     }
+
+    @PutMapping("/{id}/unfreeze-timesheet")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    public ResponseEntity<String> unfreezeTimesheet(@PathVariable Long id) {
+        userService.unfreezeTimesheet(id);
+        return ResponseEntity.ok("Timesheet access restored.");
+    }
 }

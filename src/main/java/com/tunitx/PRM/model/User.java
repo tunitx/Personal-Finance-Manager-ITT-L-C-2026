@@ -53,6 +53,15 @@ public class User implements UserDetails {
     @Column(name = "force_password_change", nullable = false)
     private boolean forcePasswordChange = false;
 
+    @Column(name = "timesheet_frozen", nullable = false)
+    private boolean timesheetFrozen = false;
+
+    @Column(name = "reminder_count", nullable = false)
+    private int reminderCount = 0;
+
+    @Column(name = "last_reminder_sent_at")
+    private java.time.LocalDate lastReminderSentAt;
+    
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 

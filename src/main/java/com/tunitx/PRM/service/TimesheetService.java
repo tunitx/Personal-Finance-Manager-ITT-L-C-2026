@@ -4,6 +4,7 @@ import com.tunitx.PRM.dto.timesheet.*;
 import com.tunitx.PRM.model.ActivityTag;
 import com.tunitx.PRM.model.Timesheet;
 import com.tunitx.PRM.model.TimesheetEntry;
+import com.tunitx.PRM.model.User;
 import com.tunitx.PRM.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -83,7 +84,15 @@ public class TimesheetService {
     @Transactional
     public TimesheetResponse submitTimesheet(
             Long userId, SubmitTimesheetRequest request) {             // ← param renamed
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // ── Freeze check — BRD Notification 1 ────────────────────────────────
+        if (user.isTimesheetFrozen()) {
+            throw new RuntimeException(
+                    "Your timesheet access is frozen. "
+                            + "Please contact your manager to restore access.");
+        }
         LocalDate weekStart = request.getWeekStart();
 
         if (weekStart.isAfter(LocalDate.now())) {

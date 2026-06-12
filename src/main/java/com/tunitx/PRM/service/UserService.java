@@ -8,6 +8,7 @@ import com.tunitx.PRM.dto.employee.SkillResponse;
 import com.tunitx.PRM.model.*;
 import com.tunitx.PRM.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -30,6 +32,22 @@ public class UserService {
 
 
     // ── List users with optional filters ──────────────────────────────────
+
+    public void unfreezeTimesheet(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.isTimesheetFrozen()) {
+            throw new RuntimeException("Timesheet access is not frozen for this user");
+        }
+
+        user.setTimesheetFrozen(false);
+        user.setReminderCount(0);
+        user.setLastReminderSentAt(null);
+        userRepository.save(user);
+
+        log.info("Timesheet access restored for user {}", user.getUsername());
+    }
 
     public List<UserResponse> getAllUsers(String status, String department) {
         List<User> users;

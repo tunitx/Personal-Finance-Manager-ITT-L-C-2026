@@ -1,8 +1,6 @@
 package com.tunitx.PRM.controller;
 
-import com.tunitx.PRM.dto.ai.AiResponse;
-import com.tunitx.PRM.dto.ai.RiskSummaryRequest;
-import com.tunitx.PRM.dto.ai.SkillMatchRequest;
+import com.tunitx.PRM.dto.ai.*;
 import com.tunitx.PRM.service.AiService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,5 +29,11 @@ public class AiController {
     public ResponseEntity<AiResponse> riskSummary(
             @Valid @RequestBody RiskSummaryRequest request) {
         return ResponseEntity.ok(aiService.riskSummary(request));
+    }
+
+    @PostMapping("/team-builder")
+    public ResponseEntity<TeamBuildResponse> teamBuilder(
+            @Valid @RequestBody TeamBuildRequest request) {
+        return ResponseEntity.ok(aiService.teamBuilder(request));
     }
 }
